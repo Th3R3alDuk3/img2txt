@@ -36,10 +36,10 @@
         
         </div>
 
-        <!-- -->
-
-        <script src="https://scaleflex.cloudimg.io/v7/plugins/filerobot-image-editor/latest/filerobot-image-editor.min.js"></script>
-        <script src='https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js'></script>
+        <!-- <script src="https://scaleflex.cloudimg.io/v7/plugins/filerobot-image-editor/latest/filerobot-image-editor.min.js"></script> -->
+        <script src="/static/js/filerobot-image-editor.min.js"></script>
+        <!-- <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script> -->
+        <script src="/static/js/tesseract.min.js"></script>
 
         <script>
 
@@ -67,11 +67,16 @@
                         let language = document.getElementById("language");
                         let selectedLanguage = language.options[language.selectedIndex].text;
 
-                        Tesseract.recognize(editedImageObject.imageBase64, selectedLanguage, {logger: m => {
-                            console.log(m);
-                            if (m.status == "recognizing text")
-                                progress.value = m.progress;
-                        }}).then(({data: { text }}) => { 
+                        Tesseract.recognize(editedImageObject.imageBase64, selectedLanguage, {
+                            workerPath: "/static/js/worker.min.js",
+                            langPath: "https://tessdata.projectnaptha.com/4.0.0",
+                            //corePath: "https://cdn.jsdelivr.net/npm/tesseract.js-core@v4.0.3",
+                            logger: m => {
+                                console.log(m);
+                                if (m.status == "recognizing text")
+                                    progress.value = m.progress;
+                            }
+                        }).then(({data: { text }}) => { 
                             textarea.innerText = text;
                         });
 
