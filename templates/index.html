@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<head>
+
+    <style type="text/css">
+
+        #layout {
+            display: flex; 
+            flex-direction: column;
+            padding: 20px;
+        }
+
+    </style>
+
+</head>
+<html>
+
+    <body>
+
+        <div id="layout">            
+        
+            <input type="file" name="file" id="file" accept="image/*">
+
+            <select id="language">
+                <option>eng</option>
+                <option>deu</option>
+                <option>ara</option>
+                <option>rus</option>
+                <option>chi_sim</option>
+                <option>chi_tra</option>
+            </select>
+
+            <div id="imageEditor"></div>
+
+            <progress id="progress" min="0" max="1" value="0">0%</progress>
+            <pre id="textarea" contenteditable></pre>
+        
+        </div>
+
+        <!-- -->
+
+        <script src="https://scaleflex.cloudimg.io/v7/plugins/filerobot-image-editor/latest/filerobot-image-editor.min.js"></script>
+        <script src='https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js'></script>
+
+        <script>
+
+            document.addEventListener("DOMContentLoaded", () => {
+
+                /* FILEROBOT IMAGE EDITOR */
+
+                const { TABS, TOOLS } = FilerobotImageEditor;
+
+                let imageEditor = document.getElementById("imageEditor");
+
+                const filerobotImageEditor = new FilerobotImageEditor(imageEditor, { 
+                    tabsIds: [TABS.ADJUST, TABS.FINETUNE, TABS.FILTERS, TABS.RESIZE, TABS.ANNOTATE],
+                    defaultTabId: TABS.ADJUST,
+                    defaultToolId: TOOLS.ROTATE,
+                    Rotate: { angle: 90, componentType: "slider" },
+                    onSave: (editedImageObject, designState) => {
+
+                        console.log("saved", editedImageObject, designState)
+
+                        /* TESSERACT JS */
+                    
+                        let progress = document.getElementById("progress");
+                        let textarea = document.getElementById("textarea");
+                        let language = document.getElementById("language");
+                        let selectedLanguage = language.options[language.selectedIndex].text;
+
+                        Tesseract.recognize(editedImageObject.imageBase64, selectedLanguage, {logger: m => {
+                            console.log(m);
+                            if (m.status == "recognizing text")
+                                progress.value = m.progress;
+                        }}).then(({data: { text }}) => { 
+                            textarea.innerText = text;
+                        });
+
+                    },   
+                });
+
+
+                /**/
+
+                document.getElementById("file").addEventListener("change", function(event) {
+
+                    let file = event.target.files[0];
+                    
+                    filerobotImageEditor.config.source = URL.createObjectURL(file);
+                    filerobotImageEditor.render();
+
+                });   
+                
+            });
+
+        </script>
+
+    </body>
+
+</html>
